@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.12)
-project(helloworld_with_helloimgui)
+project(ConverterGUI)
 set(CMAKE_CXX_STANDARD 17)
+
+# Include directory for cyaml
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/cyaml)
 
 # Build hello_imgui
 # =================
@@ -17,17 +20,36 @@ if (NOT TARGET hello_imgui)
     FetchContent_MakeAvailable(hello_imgui)
 endif()
 
-# 3/  Option 3: via vcpkg
-# i/ You can install hello_imgui via vcpkg with:
-#     vcpkg install "hello-imgui[opengl3-binding,glfw-binding]"
-# ii/ Then you can use it inside CMake with:
-#     find_package(hello-imgui CONFIG REQUIRED)
-
 
 # Build your app
 # ==============
-hello_imgui_add_app(hello_world_ hello_world.main.cpp)
+set(SOURCE_FILES
+    ./src/main.cpp
+    ./src/converter.cpp
+    ./src/converter.h
+)
 
+hello_imgui_add_app(ConverterGUI ${SOURCE_FILES})
+
+
+set(CANLIB_INCLUDE_DIR "C:/Program Files (x86)/Kvaser/Canlib/INC")
+set(CANLIB_LIB_DIR_X86 "C:/Program Files (x86)/Kvaser/Canlib/Lib/MS")
+set(CANLIB_LIB_DIR_X64 "C:/Program Files (x86)/Kvaser/Canlib/Lib/x64")
+
+include_directories(${CANLIB_INCLUDE_DIR})
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    # 64-bit system
+    target_link_directories(${PROJECT_NAME} PRIVATE ${CANLIB_LIB_DIR_X64})
+    target_link_libraries(${PROJECT_NAME} PRIVATE canlib32.lib kvmlib.lib kvlclib.lib)
+else()
+    # 32-bit system
+    target_link_directories(${PROJECT_NAME} PRIVATE ${CANLIB_LIB_DIR_X86})
+    target_link_libraries(${PROJECT_NAME} PRIVATE canlib32.lib kvmlib.lib kvlclib.lib)
+endif()
+
+# Link cyaml to your app
+#target_link_libraries(hello_world PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib/libcyaml.a)
 
 # hello_imgui_add_app is a helper function, similar to cmake's "add_executable"
 # Usage:
