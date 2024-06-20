@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 project(ConverterGUI)
 set(CMAKE_CXX_STANDARD 17)
+include(FetchContent)
 
 # Include directory for cyaml
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/cyaml)
@@ -47,6 +48,22 @@ else()
     target_link_directories(${PROJECT_NAME} PRIVATE ${CANLIB_LIB_DIR_X86})
     target_link_libraries(${PROJECT_NAME} PRIVATE canlib32.lib kvmlib.lib kvlclib.lib)
 endif()
+
+# Fetch YAML-CPP
+FetchContent_Declare(
+  yaml-cpp
+  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+  GIT_TAG master # Can be a tag (yaml-cpp-x.x.x), a commit hash, or a branch name (master)
+)
+FetchContent_GetProperties(yaml-cpp)
+
+if(NOT yaml-cpp_POPULATED)
+  message(STATUS "Fetching yaml-cpp...")
+  FetchContent_Populate(yaml-cpp)
+  add_subdirectory(${yaml-cpp_SOURCE_DIR} ${yaml-cpp_BINARY_DIR})
+endif()
+
+target_link_libraries(${PROJECT_NAME} PRIVATE yaml-cpp)
 
 # Link cyaml to your app
 #target_link_libraries(hello_world PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib/libcyaml.a)
